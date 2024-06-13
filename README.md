@@ -344,7 +344,7 @@ verify the output of the deployed website on OpenShift by accessing the applicat
 2. **Find the Route**:
    In your OpenShift project, locate the route created for your application. This will be in the `Networking > Routes` section.
 
-   ![alt text](screenshots/oc5.png)
+
 
 3. **Open the Application URL**:
    Copy the URL provided in the route and paste it into your web browser to access the deployed application.
@@ -394,7 +394,7 @@ Here are the useful commands for each tool used in this project, including Terra
 #### 1. Setting Up Terraform
 ```sh
 # Navigate to the Terraform directory
-cd /home/osamaayman/Documents/MultiCloudDevOpsProject/Terraform
+cd /home/masry/Documents/MultiCloudDevOpsProject/Terraform
 
 # Initialize the Terraform configuration
 terraform init
@@ -407,13 +407,13 @@ terraform apply --auto-approve
 ```sh
 # Extract the EC2 IP address and update the inventory file
 ip_address=$(cat ec2-ip.txt)
-echo -e "jenkins-ec2 ansible_host=${ip_address} ansible_user=ubuntu ansible_ssh_private_key_file=/path/to/your/private/key.pem" > /home/osamaayman/Documents/MultiCloudDevOpsProject/Ansible/inventory.txt
+echo -e "jenkins-ec2 ansible_host=${ip_address} ansible_user=ubuntu ansible_ssh_private_key_file=/path/to/your/private/key.pem" > /home/masry/Documents/MultiCloudDevOpsProject/Ansible/inventory.txt
 ```
 
 #### 3. Running Ansible Playbook
 ```sh
 # Navigate to the Ansible directory
-cd /home/osamaayman/Documents/MultiCloudDevOpsProject/Ansible
+cd /home/masry/Documents/MultiCloudDevOpsProject/Ansible
 
 # Run the Ansible playbook
 ansible-playbook -i inventory.txt playbook.yml --ask-vault-pass
