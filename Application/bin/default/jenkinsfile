@@ -1,0 +1,108 @@
+@Library('shared-library') _
+
+// agent {
+//         label 'slave2'
+//     }
+pipeline {
+    environment {
+        imageName = 'algn48/spring-boot-app'
+    }
+    agent {
+        label 'slave2'
+    }
+    stages {
+        
+         stage('Verify Branch') {
+            steps {
+                echo "$GIT_BRANCH"
+            }
+        }
+
+        
+                stage('List Tasks') {
+                            steps {
+                                sh '''
+                                    cd Application
+                                    chmod +x ./gradlew
+                                    ./gradlew tasks
+                                    '''
+                            }
+                        }
+                        
+                stage('build') {
+                            steps {
+                            script{
+                                sh '''
+                                    cd Application
+                                    chmod +x ./gradlew
+                                      ./gradlew build '''
+                                
+                            }
+                            }
+                        }
+
+
+                stage('test') {
+                    steps {
+                    script{
+                        sh '''
+                            cd Application
+                            chmod +x ./gradlew
+                            ./gradlew test 
+                        '''
+
+
+                        
+                    }
+                    }
+                }
+
+
+
+        stage('SonarQube Analysis') {
+
+            steps {
+               withSonarQubeEnv(credentialsId: 'jenkins-sonar',installationName: 'sq1') {
+                    sh '''
+                                    cd Application
+                                    chmod +x ./gradlew
+                                    ./gradlew sonarqube --info
+                        '''
+                    
+                    }
+            }
+        }
+ 
+
+
+        
+
+        
+        stage('Build and Push Docker Image') {
+            steps {
+         
+            buildPushtoHub([
+            image: "${imageName}:${BUILD_NUMBER}",
+            DockerCredentials: 'DOCKERHUB',
+            dockerfile: 'Application/Dockerfile', // Optional: Specify the path to the Dockerfile
+            context: 'Application' // Optional: Specify the build context directory
+        ])
+        
+    }
+        }
+        //         stage('kubernetes') {
+        //     steps {
+        //        withKubeCredentials(kubectlCredentials: [[caCertificate: '', clusterName: '', contextName: '', credentialsId: '4', namespace: 'ahmedgomaa', serverUrl: 'https://api.ocp-training.ivolve-test.com:6443']]) {    
+        //          sh 'kubectl apply -f DeplymentAndSvc.yml -n ahmedgomaa'
+                 
+        //     }
+        //     }
+        // }
+
+
+
+
+
+
+    }
+}
