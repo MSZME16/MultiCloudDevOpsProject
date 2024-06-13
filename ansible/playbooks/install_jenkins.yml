@@ -1,0 +1,6 @@
+# install_jenkins.yml
+- hosts: docker-server
+  become: yes
+  roles:
+  - jenkins
+

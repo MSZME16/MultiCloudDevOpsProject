@@ -1,0 +1,84 @@
+# tasks file for sonarQube
+
+
+- name: Install necessary dependencies
+  yum:
+    name: "{{ item }}"
+    state: present
+  loop:
+    #- java-11-openjdk-devel
+  - wget
+  - unzip
+  become: true
+
+- name: Add SonarQube user
+  user:
+    name: sonar
+    system: yes
+    shell: /bin/bash
+  become: true
+
+- name: Download SonarQube
+  get_url:
+    url: "https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-9.6.1.59531.zip"
+    dest: "/opt/sonarqube-9.6.1.59531.zip"
+  become: true
+
+- name: Unpack SonarQube
+  unarchive:
+    src: "/opt/sonarqube-9.6.1.59531.zip"
+    dest: "/opt/"
+    remote_src: yes
+  become: true
+
+- name: Create symbolic link to SonarQube
+  file:
+    src: "/opt/sonarqube-9.6.1.59531"
+    dest: "/opt/sonarqube"
+    state: link
+  become: true
+
+- name: Change ownership of SonarQube directory
+  file:
+    path: "/opt/sonarqube"
+    state: directory
+    owner: sonar
+    group: sonar
+    recurse: yes
+  become: true
+
+- name: Copy SonarQube systemd service file
+  copy:
+    content: |
+      [Unit]
+      Description=SonarQube service
+      After=syslog.target network.target
+
+      [Service]
+      Type=forking
+      ExecStart=/opt/sonarqube/bin/linux-x86-64/sonar.sh start
+      ExecStop=/opt/sonarqube/bin/linux-x86-64/sonar.sh stop
+      User=sonar
+      Group=sonar
+      Restart=always
+      LimitNOFILE=65536
+      LimitNPROC=4096
+      TimeoutStartSec=5
+      RestartSec=5
+
+      [Install]
+      WantedBy=multi-user.target
+    dest: /etc/systemd/system/sonarqube.service
+  become: true
+
+- name: Reload systemd daemon
+  command: systemctl daemon-reload
+  become: true
+
+- name: Enable and start SonarQube service
+  systemd:
+    name: sonarqube
+    enabled: yes
+    state: started
+  become: true
+

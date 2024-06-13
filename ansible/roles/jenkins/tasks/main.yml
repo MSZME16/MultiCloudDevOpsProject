@@ -1,0 +1,44 @@
+
+    - name: Download Jenkins repository file
+      get_url:
+        url: https://pkg.jenkins.io/redhat-stable/jenkins.repo
+        dest: /etc/yum.repos.d/jenkins.repo
+      become: true
+
+    - name: Import Jenkins-CI key
+      shell: rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+      become: true
+
+    - name: Install Java
+      yum:
+        name: java-17-amazon-corretto-devel
+        state: present
+      become: true
+
+    - name: Install Jenkins
+      yum:
+        name: jenkins
+        state: present
+      become: true
+
+    - name: Start Jenkins service
+      service:
+        name: jenkins
+        state: started
+      become: true
+    - name: Wait for Jenkins to start up
+      wait_for:
+        path: /var/lib/jenkins/secrets/initialAdminPassword
+        state: present
+        timeout: 30
+      become: true
+
+    - name: Read initial Jenkins admin password
+      slurp:
+        src: /var/lib/jenkins/secrets/initialAdminPassword
+      register: jenkins_admin_password
+      become: true
+
+    - name: Print initial Jenkins admin password
+      debug:
+        msg: "Initial Jenkins admin password: {{ jenkins_admin_password.content | b64decode }}"
